@@ -192,6 +192,7 @@ def launch_sitl_dds(context: LaunchContext) -> List[LaunchDescriptionEntity]:
     sitl_port = 5501 + port_offset
     mavlink_out = 14550 + port_offset
     sim_address = LaunchConfiguration("sim_address").perform(context)
+    mavlink_address = LaunchConfiguration("mavlink_address").perform(context)  # Added: mavlink_address port for communication between WSL and Windows
 
     # ardupilot_sitl
     sitl_arguments = {
@@ -205,9 +206,11 @@ def launch_sitl_dds(context: LaunchContext) -> List[LaunchDescriptionEntity]:
       "defaults": LaunchConfiguration("defaults"),
       "synthetic_clock": LaunchConfiguration("synthetic_clock"),
       "sim_address": sim_address,
+      "mavlink_address": mavlink_address,  # Added
       "master": f"tcp:{sim_address}:{master_port}",
       "sitl": f"{sim_address}:{sitl_port}",
-      "out": f"{sim_address}:{mavlink_out}",
+    #   "out": f"{sim_address}:{mavlink_out}",  # Changed
+      "out": f"{mavlink_address}:{mavlink_out}",  # Added
       "use_instance_dir": LaunchConfiguration("use_instance_dir"),
     }
 
@@ -300,6 +303,11 @@ def generate_launch_arguments() -> List[LaunchDescriptionEntity]:
         DeclareLaunchArgument(
             "sim_address",
             default_value="127.0.0.1",
+        ),
+        DeclareLaunchArgument(  # MAVLink address for communication between vehicle on wsl and QGroundControl on windows
+            "mavlink_address",
+            default_value="172.25.80.1",
+            description="Address for MAVLink output",
         ),
         DeclareLaunchArgument(
             "instance",
